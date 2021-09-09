@@ -21,7 +21,7 @@ class phpMockServer
     private $response;
     private const FETCHCALL = 1;
     private const MOCKCALL = 2;
-    private const RETURNPRESELECTION = 3;
+    private const SETPRESELECTION = 3;
 
     private $configBasePath;
     private $pathParams;
@@ -38,7 +38,7 @@ class phpMockServer
     {
         if ($this->determineRequestType() == self::FETCHCALL) {
             $this->performCallFetch();
-        } else if ($this->determineRequestType() == self::RETURNPRESELECTION) {
+        } else if ($this->determineRequestType() == self::SETPRESELECTION) {
             $this->performPreselection();
         } else{
             $this->performMockRequest();
@@ -198,8 +198,8 @@ class phpMockServer
         if (count($parts) > 3 && $parts[1] == "getCallPayload") {
             return self::FETCHCALL;
         }
-        if (count($parts) > 3 && $parts[1] == "returnPreselection") {
-            return self::RETURNPRESELECTION;
+        if (count($parts) > 3 && $parts[1] == "setPreselection") {
+            return self::SETPRESELECTION;
         }
 
 

@@ -71,11 +71,9 @@ class MockAwait extends \Codeception\Module
         $host = "http://pmc.test/";
         $this->adddata = [];
         try{
-            $url = $host."returnPreselection/".$methode.'/'.$path;
+            $url = $host."setPreselection/".$methode.'/'.$path."?value=".urlencode($value);
 
-            $client->request('POST', $url, [
-                'body' => $value
-            ]);
+            file_get_contents($url);
         }
         catch(Exception $e){
             $this->fail($e->getMessage());
