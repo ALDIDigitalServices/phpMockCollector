@@ -18,6 +18,8 @@ class phpMockServer
     const MOCK_KEY_HEADER = 'header';
     const MOCK_KEY_HTTPCODE = 'httpcode';
     const MOCK_KEY_BODY = 'body';
+    const MOCK_KEY_HTTP_METHOD = 'method';
+
     private $request;
     private $response;
     private const FETCHCALL = 1;
@@ -104,7 +106,7 @@ class phpMockServer
                     throw new \Exception('No callback found.');
                 }
             } catch (\Exception $e) {
-                $this->response->setContent("Failed to call customCallbock:" . $conf[self::MOCK_KEY_CUSTOM_CALLBACK] . PHP_EOL . $e->getMessage());
+                $this->response->setContent("Failed to call customCallback:" . $conf[self::MOCK_KEY_CUSTOM_CALLBACK] . PHP_EOL . $e->getMessage());
                 return false;
             }
 
@@ -127,10 +129,12 @@ class phpMockServer
         if (isset($conf[self::MOCK_KEY_HTTPCODE])) {
             $this->response->setStatusCode($conf[self::MOCK_KEY_HTTPCODE]);
         }
-        if (is_array($conf[self::MOCK_KEY_BODY])) {
+        if (is_array($conf[self::MOCK_KEY_BODY] ?? null)) {
             /* I would expect this to be moved to headers inside mock, and add additional key `bodyIsJson` by which encode the body. */
             $this->response->headers->set('Content-Type', 'application/json');
             $this->response->setContent(json_encode($conf[self::MOCK_KEY_BODY]));
+        } elseif($conf[self::MOCK_KEY_HTTP_METHOD] == Request::METHOD_OPTIONS) {
+            $this->response->setContent($conf[self::MOCK_KEY_BODY] ?? null);
         } else {
             $this->response->setContent($conf[self::MOCK_KEY_BODY]);
         }
@@ -169,7 +173,7 @@ class phpMockServer
     protected function selectMatchingConfig()
     {
         $config = $this->getMockConfig();
-        $methode = $this->getMethode();
+        $method = $this->getMethod();
         if(isset($config['path'])){
 
             foreach ($config = $config['path'] as $path){
@@ -181,9 +185,10 @@ class phpMockServer
             }
         }
 
-        if (isset($config[$methode])) {
-            foreach ($config[$methode] as $key => $mock) {
+        if (isset($config[$method])) {
+            foreach ($config[$method] as $key => $mock) {
                 if (!isset($mock[self::MOCK_KEY_RULES]) or $this->checkRules($mock[self::MOCK_KEY_RULES])) {
+                    $mock[self::MOCK_KEY_HTTP_METHOD] = $method;
                     return $mock;
                 }
             }
@@ -216,7 +221,7 @@ class phpMockServer
         return "";
     }
 
-    private function getMethode()
+    private function getMethod()
     {
         if ($this->determineRequestType() != self::MOCKCALL) {
             $parts = explode("/", $this->request->getPathInfo());
@@ -289,7 +294,7 @@ class phpMockServer
             return;
         }
 
-        $datapath = __DIR__ . '/../data/' . $this->getMethode()
+        $datapath = __DIR__ . '/../data/' . $this->getMethod()
             . $this->getTrackingRequestId(DIRECTORY_SEPARATOR, '')
             . $this->getPath().".dat";
         $timeout = $this->request->headers->get("X-timeout", 60);
