@@ -81,7 +81,7 @@ class phpMockServer
     {
         $conf = $this->selectMatchingConfig();
         if ($conf === false) {
-            $this->response->setContent('No Mock found for this endpoint');
+            $this->response->setContent('No Mock found for this endpoint.<br><br>Possible Mockspath:<br>'.$this->getLinkListForMocks());
             $this->response->setStatusCode(404);
             return false;
         }
@@ -319,5 +319,34 @@ class phpMockServer
     }
     public function getResponseObject(): Response {
         return $this->response;
+    }
+
+    private function getListOfMocks(): array
+    {
+        $directory = $this->configBasePath . DIRECTORY_SEPARATOR;
+        $mocks = [];
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getFilename() === 'mock.json') {
+                $relativePath = str_replace($directory, '', $file->getPath());
+                $mockfolders[] = $relativePath;
+            }
+        }
+
+        return $mockfolders;
+    }
+
+    private function getLinkListForMocks(): string
+    {
+        $html = "";
+        foreach ($this->getListOfMocks() as $mockpath){
+          $html .= "<a href='/".$mockpath."'>".$mockpath."</a><br>";
+        }
+        return $html;
     }
 }
