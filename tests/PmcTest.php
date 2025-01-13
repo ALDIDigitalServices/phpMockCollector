@@ -237,7 +237,7 @@ final class PmcTest extends TestCase
         );
         $this->assertEquals($this->cleanRequestFileContent(file_get_contents(__DIR__."/__data/request_hello_with_request_id")), $this->cleanRequestFileContent($m->getResponseObject()->getContent()));
     }
-    
+
     public function testGetConfigPath(): void{
         $_SERVER['REQUEST_URI'] = "/hello";
         $_GET = [];
@@ -331,6 +331,15 @@ final class PmcTest extends TestCase
             'run'
         );
         $this->assertEquals("Preselection", $m->getResponseObject()->getContent());
+    }
+
+    public function testErrorPageWithMockList()
+    {
+        $expectedLinkList = "<a href='/hellophp'>hellophp</a><br><a href='/proxy'>proxy</a><br><a href='/preselection'>preselection</a><br><a href='/wildcard'>wildcard</a><br><a href='/hello'>hello</a><br>";
+
+        $m = new \ALDIDigitalServices\pms\phpMockServer(__DIR__."/__mocks");
+        $returnVal = \ALDIDigitalServices\pms\PHPUnitUtil::callMethod($m, "getLinkListForMocks");
+        $this->assertEquals($expectedLinkList, $returnVal);
     }
 
 }
