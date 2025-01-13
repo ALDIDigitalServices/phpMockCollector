@@ -81,7 +81,7 @@ class phpMockServer
     {
         $conf = $this->selectMatchingConfig();
         if ($conf === false) {
-            $this->response->setContent('No Mock found for this endpoint.<br><br>Possible Mockspath:<br>'.$this->getLinkListForMocks());
+            $this->response->setContent('No Mock found for this endpoint.<br><br>Possible paths for mocks:<br>'.$this->getLinkListForMocks());
             $this->response->setStatusCode(404);
             return false;
         }
